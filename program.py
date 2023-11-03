@@ -104,8 +104,21 @@ print_query_result("Запит 2", columns_translation, result)
 
 # Запит 3: Відобразити всіх читачів, які брали посібники в бібліотеці. Відсортувати прізвища за алфавітом.
 cur.execute("""
-SELECT * FROM Readers WHERE ticket_number IN (SELECT DISTINCT reader_ticket FROM Book_Loans WHERE book_inventory_number IN (SELECT DISTINCT inventory_number FROM Books WHERE type = 'Посібник')) ORDER BY last_name;
+SELECT 
+    r.*, 
+    bl.loan_code 
+FROM 
+    Readers r 
+JOIN 
+    Book_Loans bl 
+ON 
+    r.ticket_number = bl.reader_ticket 
+WHERE 
+    bl.book_inventory_number IN (SELECT DISTINCT inventory_number FROM Books WHERE type = 'Посібник') 
+ORDER BY 
+    r.last_name;
 """)
+
 result = cur.fetchall()
 columns_translation = {
     "ticket_number": "Номер квитка",
@@ -114,7 +127,8 @@ columns_translation = {
     "phone_number": "Номер телефону",
     "address": "Адреса",
     "course": "Курс",
-    "group_name": "Група"
+    "group_name": "Група",
+    "loan_code": "Код позики"  # Додана нова назва
 }
 print_query_result("Запит 3", columns_translation, result)
 
@@ -141,7 +155,7 @@ print_query_result(f"Запит 4 (Розділ: {section})", columns_translatio
 
 # Запит 5: Для кожної книги, яка була видана читачу, порахувати кінцевий термін її повернення в бібліотеку (запит з обчислювальним полем)
 cur.execute("""
-    SELECT Book_Loans.loan_code, Books.title, Book_Loans.loan_date + Books.max_loan_period as return_date
+    SELECT Book_Loans.loan_code, Books.title, Book_Loans.loan_date as return_date, Book_Loans.loan_date + Books.max_loan_period as return_date_calc
     FROM Book_Loans
     JOIN Books ON Book_Loans.book_inventory_number = Books.inventory_number;
 """)
@@ -149,9 +163,11 @@ result = cur.fetchall()
 columns_translation = {
     "loan_code": "Код позики",
     "title": "Назва книги",
-    "return_date": "Дата повернення"
+    "return_date": "Дата видачі",
+    "return_date_calc": "Розрахункова дата повернення"
 }
 print_query_result("Запит 5", columns_translation, result)
+
 
 # Запит 6: Порахувати кількість посібників, книг та періодичних видань в кожному розділі (перехресний запит)
 cur.execute("""
