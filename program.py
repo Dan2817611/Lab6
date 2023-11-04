@@ -12,8 +12,29 @@ conn = psycopg2.connect(
 # Створення курсора для виконання SQL-запитів
 cur = conn.cursor()
 
+# Функція для виведення структури таблиці
+def print_table_structure(table_name):
+    cur.execute(f"SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '{table_name}';")
+    data = cur.fetchall()
+
+    max_col_name_length = max(len(row[0]) for row in data)
+    max_data_type_length = max(len(row[1]) for row in data)
+
+    print(f"\nTable: {table_name} Structure")
+    print(f"+{'-'*(max_col_name_length+2)}+{'-'*(max_data_type_length+2)}+")
+    print(f"| {'Назва поля'.ljust(max_col_name_length)} | {'Тип'.ljust(max_data_type_length)} |")
+    print(f"+{'-'*(max_col_name_length+2)}+{'-'*(max_data_type_length+2)}+")
+    for row in data:
+        print(f"| {row[0].ljust(max_col_name_length)} | {row[1].ljust(max_data_type_length)} |")
+    print(f"+{'-'*(max_col_name_length+2)}+{'-'*(max_data_type_length+2)}+")
+
+
+
 # Функція для виведення даних таблиці з вказаними назвами стовпців
 def print_table(table_name, custom_columns):
+    # Виведення структури таблиці
+    print_table_structure(table_name)
+
     # Виведення назв стовпців
     columns = custom_columns
 
@@ -44,6 +65,7 @@ columns_book_loans = ["Код видачі", "Дата видачі", "Інве�
 print_table("books", columns_books)
 print_table("readers", columns_readers)
 print_table("book_loans", columns_book_loans)
+
 
 #Запити
 def print_query_result(query_name, columns_translation, result):

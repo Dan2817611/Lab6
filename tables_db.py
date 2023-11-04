@@ -34,7 +34,7 @@ cur.execute("""
         ticket_number INT PRIMARY KEY,
         last_name VARCHAR(255),
         first_name VARCHAR(255),
-        phone_number VARCHAR(15),
+        phone_number VARCHAR(13),
         address VARCHAR(255),
         course INT CHECK (course >= 1 AND course <= 4),
         group_name VARCHAR(255)
